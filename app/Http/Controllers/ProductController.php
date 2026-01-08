@@ -12,7 +12,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return response()->json(Product::all(), 200);
+        return Product::all();
     }
 
     /**
@@ -20,8 +20,8 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $product = Product::create($request->all());
-        return response()->json($product, 201);
+        $product = Product::create($request->validated());
+        return $product;
     }
 
     /**
@@ -29,9 +29,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        $product = Product::find($id);
-        if (!$product) return response()->json(['message' => 'Nincs ilyen termék'], 404);
-        return response()->json($product, 200);
+        return $product;
     }
 
     /**
@@ -39,11 +37,8 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $product = Product::find($id);
-        if (!$product) return response()->json(['message' => 'Nincs ilyen termék'], 404);
-
-        $product->update($request->all());
-        return response()->json($product, 200);
+        $product->update($request->validated());
+        return $product;
     }
 
     /**
@@ -51,10 +46,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $product = Product::find($id);
-        if (!$product) return response()->json(['message' => 'Nincs ilyen termék'], 404);
-
         $product->delete();
-        return response()->json(['message' => 'Termék sikeresen törölve'], 200);
+        return response()->noContent();
     }
 }
