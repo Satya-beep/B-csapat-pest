@@ -14,7 +14,7 @@ class ExampleTest extends TestCase
      * GET /products (INDEX)
      * ------------------------------------------------------------------------ */
 
-    public function test_index_listazza_az_osszes_terméket()
+    public function test_index_list()
     {
         Product::factory()->count(3)->create();
         $this->getJson('/api/products')
@@ -22,14 +22,14 @@ class ExampleTest extends TestCase
             ->assertJsonCount(3);
     }
 
-    public function test_index_ures_listat_ad_vissza_ha_nincs_termek()
+    public function test_index_empty()
     {
         $this->getJson('/api/products')
             ->assertStatus(200)
             ->assertJson([]);
     }
 
-    public function test_index_a_valaszstruktura_megfelelo_mezokat_tartalmaz()
+    public function test_index_structure()
     {
         Product::factory()->create();
         $this->getJson('/api/products')
@@ -40,7 +40,7 @@ class ExampleTest extends TestCase
      * POST /products (STORE)
      * ------------------------------------------------------------------------ */
 
-    public function test_store_sikeresen_letrehoz_egy_terméket_valid_adatokkal()
+    public function test_store_success()
     {
         $data = ['name' => 'Laptop', 'price' => 500000];
         $this->postJson('/api/products', $data)
@@ -49,14 +49,14 @@ class ExampleTest extends TestCase
         $this->assertDatabaseHas('products', ['name' => 'Laptop']);
     }
 
-    public function test_store_hibauzenetet_ad_ha_hianyzik_a_kotelez_nev_mezo()
+    public function test_store_missing_name()
     {
         $this->postJson('/api/products', ['price' => 100])
             ->assertStatus(422)
             ->assertJsonValidationErrors(['name']);
     }
 
-    public function test_store_nem_enged_negativ_arat_megadni()
+    public function test_store_negative_price()
     {
         $this->postJson('/api/products', ['name' => 'Ingyen', 'price' => -10])
             ->assertStatus(422)
@@ -67,7 +67,7 @@ class ExampleTest extends TestCase
      * GET /products/{id} (SHOW)
      * ------------------------------------------------------------------------ */
 
-    public function test_show_megjeleníti_a_kert_terméket()
+    public function test_show_success()
     {
         $product = Product::factory()->create(['name' => 'Monitor']);
         $this->getJson("/api/products/{$product->id}")
@@ -75,13 +75,13 @@ class ExampleTest extends TestCase
             ->assertJsonPath('name', 'Monitor');
     }
 
-    public function test_show_404_et_dob_ha_a_termek_nem_letezik()
+    public function test_show_not_found()
     {
         $this->getJson('/api/products/999999')
             ->assertStatus(404);
     }
 
-    public function test_show_a_valasz_tartalmazza_a_kert_id_t()
+    public function test_show_contains_id()
     {
         $product = Product::factory()->create();
         $this->getJson("/api/products/{$product->id}")
@@ -92,7 +92,7 @@ class ExampleTest extends TestCase
      * PUT /products/{id} (UPDATE)
      * ------------------------------------------------------------------------ */
 
-    public function test_update_sikeresen_frissiti_a_terméket()
+    public function test_update_success()
     {
         $product = Product::factory()->create(['name' => 'Régi Gép']);
         $this->putJson("/api/products/{$product->id}", ['name' => 'Új Gép', 'price' => 150])
@@ -100,13 +100,13 @@ class ExampleTest extends TestCase
         $this->assertDatabaseHas('products', ['name' => 'Új Gép']);
     }
 
-    public function test_update_404_et_dob_ha_nem_letezо_terméket_akarunk_frissiteni()
+    public function test_update_not_found()
     {
         $this->putJson('/api/products/999', ['name' => 'Hiba'])
             ->assertStatus(404);
     }
 
-    public function test_update_hiba_ha_tul_rovid_nevet_adunk_meg_frissíteskor()
+    public function test_update_short_name()
     {
         $product = Product::factory()->create();
         $this->putJson("/api/products/{$product->id}", ['name' => 'a'])
@@ -117,7 +117,7 @@ class ExampleTest extends TestCase
      * DELETE /products/{id} (DESTROY)
      * ------------------------------------------------------------------------ */
 
-    public function test_destroy_sikeresen_torlai_a_terméket_es_204_et_ad()
+    public function test_destroy_success()
     {
         $product = Product::factory()->create();
         $this->deleteJson("/api/products/{$product->id}")
@@ -125,13 +125,13 @@ class ExampleTest extends TestCase
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
 
-    public function test_destroy_404_et_dob_ha_mar_torolt_vagy_nem_letezо_terméket_torolnenk()
+    public function test_destroy_not_found()
     {
         $this->deleteJson('/api/products/888')
             ->assertStatus(404);
     }
 
-    public function test_destroy_a_torles_utan_a_termek_tenyleges_eltunnik_az_adatbazisbol()
+    public function test_destroy_removed()
     {
         $product = Product::factory()->create();
         $this->deleteJson("/api/products/{$product->id}");
